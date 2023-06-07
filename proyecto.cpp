@@ -123,7 +123,7 @@ void showNeighborOptions(Node* node) {
     for (size_t i = 0; i < node->neighbors.size(); ++i) {
         cout << i + 1 << ". " << node->neighbors[i]->name << endl;
     }
-    cout << "0. Volver atrás" << endl;
+    cout << "0. Volver atras" << endl;
 }
 
 
@@ -145,9 +145,8 @@ void showGuardianOptions(Node* node, unordered_map<string, Guardian*>& guardians
         }
 
         if (weakestGuardian != nullptr) {
-            cout << "Recomendación: El guardián más débil en esta aldea es " << weakestGuardian->name
+            cout << "Recomendacion: El guardian mas debil en esta aldea es " << weakestGuardian->name
                  << " (Poder: " << weakestGuardian->power << ")." << endl;
-            option++;
         }
     }
 
@@ -160,33 +159,7 @@ void showGuardianOptions(Node* node, unordered_map<string, Guardian*>& guardians
         }
     }
     cout << "0. No luchar" << endl;
-
-    string input;
-    int selectedOption = -1;
-
-    while (true) {
-        cout << "Seleccione una opción: ";
-        getline(cin, input);
-
-        // Verificar que la entrada sea numérica y coincida exactamente con una opción válida
-        istringstream iss(input);
-        if (iss >> selectedOption && iss.eof() && selectedOption >= 0 && selectedOption <= option - 1) {
-            break;
-        }
-
-        cout << "Opción inválida. Intente nuevamente." << endl;
-    }
-
-    if (selectedOption == 0) {
-        cout << "No luchar seleccionado." << endl;
-    } else {
-        // Procesar la opción seleccionada
-        // ...
-    }
 }
-
-
-
 
 Guardian* findWeakestGuardian(Node* node, unordered_map<string, Guardian*>& guardians) {
     Guardian* weakestGuardian = nullptr;
@@ -205,19 +178,19 @@ Guardian* findWeakestGuardian(Node* node, unordered_map<string, Guardian*>& guar
 
 
 Node* choosePath(Node* current, unordered_map<string, Guardian*>& guardians) {
-    cout << "Estás en la aldea " << current->name << "." << endl;
+    cout << "Estas en la aldea " << current->name << "." << endl;
     
-    
+
 
     while (true) {
         showNeighborOptions(current);
 
         int choice;
-        cout << "Elige tu próxima aldea: ";
+        cout << "Elige tu proxima aldea: ";
         cin >> choice;
 
         if (choice < 0 || choice > static_cast<int>(current->neighbors.size())) {
-            cout << "Opción inválida. Inténtalo de nuevo." << endl;
+            cout << "Opcion invalida. Intentalo de nuevo." << endl;
         } else if (choice == 0) {
             return nullptr;  // El jugador eligió volver atrás
         } else {
@@ -226,7 +199,7 @@ Node* choosePath(Node* current, unordered_map<string, Guardian*>& guardians) {
             showGuardianOptions(next, guardians);
 
             int guardianChoice;
-            cout << "Elige el guardián con el que quieres luchar: ";
+            cout << "Elige el guardian con el que quieres luchar: ";
             cin >> guardianChoice;
 
             if (guardianChoice == 0) {
@@ -247,13 +220,17 @@ Node* choosePath(Node* current, unordered_map<string, Guardian*>& guardians) {
 
                 if (guardian != nullptr) {
                     cout << "Luchando contra " << guardian->name << " (Poder: " << guardian->power << ")..." << endl;
-                    // Aquí puedes implementar la lógica de la pelea con el guardián
+                    // implementar la lógica de la pelea con el guardián
                 }
 
                 return next;
             }
         }
     }
+}
+
+void dice (){
+	
 }
 
 int main() {
