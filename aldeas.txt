@@ -1,10 +1,10 @@
 Capital_City Tesla
 Capital_City Forest_Village
 Forest_Village Mountain_Village
-Mountain_Village Capital City
+Mountain_Village Capital_City
 Mountain_Village Desert_Village
 Desert_Village Coast_Village
-Coast_Village River Village
+Coast_Village River_Village
 River_Village Valley_Village
 Valley_Village Hill_Village
 Hill_Village Cliff_Village
