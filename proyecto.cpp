@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <climits>
 
 using namespace std;
 
@@ -16,10 +17,13 @@ struct Node {
 
 struct Guardian {
     string name;
-    int power;
-    Node* aldeaMaestro;
+    int powerLevel;
+    string mainMaster;
+    string village;
+    vector<Guardian*> apprentices;
 
-    Guardian(const string& n, int p, Node* maestro) : name(n), power(p), aldeaMaestro(maestro) {}
+    Guardian(const string& n, int p, const string& master, const string& v) 
+        : name(n), powerLevel(p), mainMaster(master), village(v) {}
 };
 
 Node* findNode(const string& name, unordered_map<string, Node*>& nodes) {
@@ -64,26 +68,36 @@ void createGraph(const string& filename, unordered_map<string, Node*>& nodes) {
 
 void loadGuardians(const string& filename, unordered_map<string, Guardian*>& guardians, unordered_map<string, Node*>& nodes) {
     ifstream file(filename);
-    if (!file) {
-        cerr << "No se pudo abrir el archivo " << filename << endl;
-        return;
-    }
 
-    string line;
-    while (getline(file, line)) {
-        istringstream iss(line);
-        string name, aldeaMaestroName;
-        int power;
-        if (iss >> name >> power >> aldeaMaestroName) {
-            Node* aldeaMaestro = findNode(aldeaMaestroName, nodes);
-            if (aldeaMaestro != nullptr) {
-                guardians[name] = new Guardian(name, power, aldeaMaestro);
+    if (file.is_open()) {
+        string line;
+        while (getline(file, line)) {
+            istringstream iss(line);
+            string name;
+            int power;
+            string masterNodeName;
+            string villageName;
+
+            if (iss >> name >> power >> masterNodeName >> villageName) {
+                Node* masterNode = nodes[masterNodeName];
+                Guardian* guardian = new Guardian(name, power, masterNodeName, villageName);
+                guardians[name] = guardian;
+
+                // Add the guardian as an apprentice to its master
+                if (masterNode != nullptr) {
+                    Guardian* masterGuardian = guardians[masterNode->name];
+                    if (masterGuardian != nullptr) {
+                        masterGuardian->apprentices.push_back(guardian);
+                    }
+                }
             }
         }
-    }
 
-    file.close();
+        file.close();
+    }
 }
+
+
 
 void dfs(Node* node, unordered_map<Node*, bool>& visited) {
     cout << node->name << " ";
@@ -129,7 +143,7 @@ void showNeighborOptions(Node* node) {
 
 
 void showGuardianOptions(Node* node, unordered_map<string, Guardian*>& guardians) {
-    cout << "Opciones de guardianes en " << node->name << ":" << endl;
+    cout << "Options for guardians in " << node->name << ":" << endl;
 
     if (node->name != "Tesla") {
         Guardian* weakestGuardian = nullptr;
@@ -138,28 +152,36 @@ void showGuardianOptions(Node* node, unordered_map<string, Guardian*>& guardians
         int option = 1;
         for (const auto& entry : guardians) {
             Guardian* guardian = entry.second;
-            if (guardian->aldeaMaestro == node && guardian->power < weakestPower) {
+            if (guardian->village == node->name && guardian->powerLevel < weakestPower) {
                 weakestGuardian = guardian;
-                weakestPower = guardian->power;
+                weakestPower = guardian->powerLevel;
             }
         }
 
         if (weakestGuardian != nullptr) {
-            cout << "Recomendacion: El guardian mas debil en esta aldea es " << weakestGuardian->name
-                 << " (Poder: " << weakestGuardian->power << ")." << endl;
+            cout << "Recommendation: The weakest guardian in this village is " << weakestGuardian->name
+                 << " (Power Level: " << weakestGuardian->powerLevel << ")." << endl;
         }
     }
 
     int option = 1;
     for (const auto& entry : guardians) {
         Guardian* guardian = entry.second;
-        if (guardian->aldeaMaestro == node) {
-            cout << option << ". " << guardian->name << " (Poder: " << guardian->power << ")" << endl;
+        if (guardian->village == node->name) {
+            cout << option << ". " << guardian->name << " (Power Level: " << guardian->powerLevel << ")" << endl;
+            if (!guardian->apprentices.empty()) {
+                cout << "    - Apprentices: ";
+                for (Guardian* apprentice : guardian->apprentices) {
+                    cout << apprentice->name << ", ";
+                }
+                cout << endl;
+            }
             option++;
         }
     }
-    cout << "0. No luchar" << endl;
+    cout << "0. Do not fight" << endl;
 }
+
 
 Guardian* findWeakestGuardian(Node* node, unordered_map<string, Guardian*>& guardians) {
     Guardian* weakestGuardian = nullptr;
@@ -167,49 +189,46 @@ Guardian* findWeakestGuardian(Node* node, unordered_map<string, Guardian*>& guar
 
     for (const auto& entry : guardians) {
         Guardian* guardian = entry.second;
-        if (guardian->aldeaMaestro == node && guardian->power < weakestPower) {
+        if (guardian->village == node->name && guardian->powerLevel < weakestPower) {
             weakestGuardian = guardian;
-            weakestPower = guardian->power;
+            weakestPower = guardian->powerLevel;
         }
     }
 
     return weakestGuardian;
 }
 
-
 Node* choosePath(Node* current, unordered_map<string, Guardian*>& guardians) {
-    cout << "Estas en la aldea " << current->name << "." << endl;
-    
-
+    cout << "You are in the village " << current->name << "." << endl;
 
     while (true) {
         showNeighborOptions(current);
 
         int choice;
-        cout << "Elige tu proxima aldea: ";
+        cout << "Choose your next village: ";
         cin >> choice;
 
         if (choice < 0 || choice > static_cast<int>(current->neighbors.size())) {
-            cout << "Opcion invalida. Intentalo de nuevo." << endl;
+            cout << "Invalid option. Please try again." << endl;
         } else if (choice == 0) {
-            return nullptr;  // El jugador eligió volver atrás
+            return nullptr;  // The player chose to go back
         } else {
             Node* next = current->neighbors[choice - 1];
 
             showGuardianOptions(next, guardians);
 
             int guardianChoice;
-            cout << "Elige el guardian con el que quieres luchar: ";
+            cout << "Choose the guardian you want to fight: ";
             cin >> guardianChoice;
 
             if (guardianChoice == 0) {
-                return next;  // El jugador eligió no luchar
+                return next;  // The player chose not to fight
             } else {
                 Guardian* guardian = nullptr;
                 int count = 1;
                 for (const auto& entry : guardians) {
                     Guardian* g = entry.second;
-                    if (g->aldeaMaestro == next) {
+                    if (g->village == next->name) {
                         if (count == guardianChoice) {
                             guardian = g;
                             break;
@@ -219,8 +238,8 @@ Node* choosePath(Node* current, unordered_map<string, Guardian*>& guardians) {
                 }
 
                 if (guardian != nullptr) {
-                    cout << "Luchando contra " << guardian->name << " (Poder: " << guardian->power << ")..." << endl;
-                    // implementar la lógica de la pelea con el guardián
+                    cout << "Fighting against " << guardian->name << " (Power Level: " << guardian->powerLevel << ")..." << endl;
+                    // Implement the fight logic with the guardian
                 }
 
                 return next;
@@ -229,9 +248,50 @@ Node* choosePath(Node* current, unordered_map<string, Guardian*>& guardians) {
     }
 }
 
+
 void dice (){
 	
 }
+
+Guardian* choosePlayerGuardian(const unordered_map<string, Guardian*>& guardians) {
+    cout << "Choose your guardian character from guardian.txt:" << endl;
+
+    int option = 1;
+    for (const auto& entry : guardians) {
+        Guardian* guardian = entry.second;
+        cout << option << ". " << guardian->name << " (Power Level: " << guardian->powerLevel << ")" << endl;
+        option++;
+    }
+
+    int choice;
+    cout << "Enter the number of your character: ";
+    cin >> choice;
+
+    // Validate the player's choice
+    while (choice < 1 || choice > option - 1) {
+        cout << "Invalid choice. Enter a valid number: ";
+        cin >> choice;
+    }
+
+    // Get the selected character
+    option = 1;
+    Guardian* playerGuardian = nullptr;
+    for (const auto& entry : guardians) {
+        Guardian* guardian = entry.second;
+        if (option == choice) {
+            playerGuardian = guardian;
+            break;
+        }
+        option++;
+    }
+
+    cout << "You have chosen " << playerGuardian->name << " as your character." << endl;
+    return playerGuardian;
+}
+
+
+
+
 
 int main() {
     unordered_map<string, Node*> nodes;
@@ -239,6 +299,9 @@ int main() {
 
     createGraph("aldeas.txt", nodes);
     loadGuardians("guardianes.txt", guardians, nodes);
+    
+    // Permitir al jugador elegir su personaje
+    Guardian* playerGuardian = choosePlayerGuardian(guardians);
 
     Node* current = findNode("Capital_City", nodes);
     while (current != nullptr) {
