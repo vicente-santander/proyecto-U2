@@ -112,7 +112,7 @@ void showNeighborOptions(Node* node) {
     for (int i = 0; i < node->neighbors.size(); ++i) {
         cout << i + 1 << ". " << node->neighbors[i]->name << endl;
     }
-    cout << "0. Volver atras" << endl;
+    cout << "0. Exit" << endl;
 }
 
 void showGuardianOptions(Node* node, unordered_map<string, Guardian*>& guardians) {
@@ -564,20 +564,23 @@ int main() {
         cout << "You want to use the alchemist function?" << endl;
         cout << "1. Yes" << endl << "2. No" << endl;
         int al;
-        cout << "Option: ";
-        cin >> al;
-        switch(al){
-        	case 1:
-        		alquimista(nodes, playerGuardian);
-        		break;
-        	case 2:
-        		break;
-        	default:
-        		cout << "Invalid option, closing alchemy" << endl;
-        		break;
-		}
-		
+        
+        if(current != nullptr){
+        	cout << "Option: ";
+	        cin >> al;
+	        switch(al){
+	        	case 1:
+	        		alquimista(nodes, playerGuardian);
+	        		break;
+	        	case 2:
+	        		break;
+	        	default:
+	        		cout << "Invalid option, closing alchemy" << endl;
+	        		break;
+			}
+		}		
     }
+    cout << endl;
     
     cout << "Guardian " << playerGuardian->name << " completed the journey!" << endl;
     cout << "Full Journey: ";
