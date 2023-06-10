@@ -1,6 +1,6 @@
 # ProyectoU2: The Guardian Journey
 ## Problematica
-se busca crear un producto computacional que actue como la propuesta de videojuego "The Guardian Journey".
+Se busca crear un producto computacional que actue como la propuesta de videojuego "The Guardian Journey".
 este juego requiere de:
 - Un grafo para representar las aldeas y sus conexiones.
 - Un arbol que almacene la informacion y jerarquia de aprendices y maestros.
