@@ -201,7 +201,7 @@ int GetDiceRoll(){
 	return dice;
 }
 
-
+// Movimiento y pelea
 Node* choosePath(Node* current, unordered_map<string, Guardian*>& guardians, Guardian* playerGuardian, vector<string>& full_journey, vector<string>& journey) {
 	
 	cout << "Guardian: " << playerGuardian->name << " (Power: " << playerGuardian->powerLevel << ")" << endl;
@@ -263,6 +263,21 @@ Node* choosePath(Node* current, unordered_map<string, Guardian*>& guardians, Gua
                 }
 
                 if (guardian != nullptr) {
+                	
+                	if(guardian->name == "Stormheart (maestro)" || guardian->name == "Stormheart the Grandmaster (maestro)"){
+						if(playerGuardian->powerLevel >= 90){
+							
+							cout << playerGuardian->name<< " (Power Level: " << playerGuardian->powerLevel << ")" << "Fighting against " 
+								 << guardian->name << " (Power Level: " << guardian->powerLevel << ")" << endl;
+							return 0;
+						}
+						else{
+							cout << "You need a minimum power of 90 to face me" << endl;
+							cout << "Keep training" << endl;
+							return next;
+						}
+					}
+					
                     cout << "Fighting against " << guardian->name << " (Power Level: " << guardian->powerLevel << ")..." << endl;
                     // Verificar si el guardian enemigo es un maestro
 					bool isPlayerMaster = (guardian->name.find("maestro") != string::npos);
@@ -309,6 +324,12 @@ Node* choosePath(Node* current, unordered_map<string, Guardian*>& guardians, Gua
                 if (next->score >= 4) {
                     cout << "Congratulations! You have reached the maximum score for this village." << endl;
                 }
+                
+                // Evitar superar maximo de poder
+				if(playerGuardian->powerLevel > 100){
+					cout << "You reached your maximum power" << endl;
+					playerGuardian->powerLevel = 100;
+				}
 				
 				Node* next = current->neighbors[choice - 1];
                 return next;
@@ -365,7 +386,7 @@ Guardian* choosePlayerGuardian(const unordered_map<string, Guardian*>& guardians
 
     for (const auto& entry : guardians) {
         Guardian* guardian = entry.second;
-        cout << option << ". " << guardian->name << endl;
+        cout << option << ". " << "Name: " << guardian->name << " -----> " << "Village: "<< guardian->village <<endl;
         guardianOptions.push_back(guardian); // Agregar el guardián a las opciones
         option++;
     }
@@ -563,6 +584,7 @@ int main() {
         
         cout << "You want to use the alchemist function?" << endl;
         cout << "1. Yes" << endl << "2. No" << endl;
+        cout << "selection" << endl;
         int al;
         
         if(current != nullptr){
